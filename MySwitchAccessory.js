@@ -1,4 +1,7 @@
 const { Service, Characteristic } = require('hap-nodejs');
+const { RaspberryPi_5B, Edge } = require('opengpio');
+
+const { Service, Characteristic } = require('hap-nodejs');
 
 class MySwitchAccessory {
     constructor(log, config) {

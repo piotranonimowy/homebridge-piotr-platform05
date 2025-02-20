@@ -19,12 +19,12 @@ class MySwitchAccessory {
   
     handleGet() {
       this.log(`Getting switch state: ${this.switchState}`);
-      this.outputPin.value = value ? 1 : 0;
       return this.switchState;
     }
   
     handleSet(value) {
       this.log(`Setting switch state to: ${value}`);
+      this.outputPin.value = value ? 1 : 0;
       this.switchState = value;
     }
   

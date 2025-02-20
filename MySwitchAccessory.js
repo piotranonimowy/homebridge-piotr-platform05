@@ -24,8 +24,12 @@ class MySwitchAccessory {
   
     handleSet(value) {
       this.log(`Setting switch state to: ${value}`);
+      try {
       this.outputPin.value = value ? 1 : 0;
       this.switchState = value;
+      } catch (error) {
+        this.log('Error setting GPIO state:', error);
+      }
     }
   
     getServices() {

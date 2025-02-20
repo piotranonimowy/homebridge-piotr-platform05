@@ -1,0 +1,66 @@
+{
+    "pluginAlias": "homebridge-piotr-platform05",
+    "pluginType": "platform",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "title": "Platform Name",
+          "default": "PiotrPlatform05",
+          "readonly": true
+        },
+        "accessories": {
+          "type": "array",
+          "title": "Accessories",
+          "items": {
+            "type": "object",
+            "properties": {
+              "accessory": {
+                "type": "string",
+                "title": "Accessory Type",
+                "enum": ["MySwitch", "GarageOpenedSensor", "GarageClosedSensor"],
+                "default": "MySwitch"
+              },
+              "name": {
+                "type": "string",
+                "title": "Accessory Name",
+                "default": "My Accessory"
+              },
+              "chip": {
+                "type": "number",
+                "title": "GPIO Chip Number",
+                "default": 4
+              },
+              "line": {
+                "type": "number",
+                "title": "GPIO Line (BCM → OpenGPIO Mapping)",
+                "enum": [5, 6, 12, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
+                "default": 22,
+                "titleMap": {
+                  "5": "GPIO.4 (BCM 5)",
+                  "6": "GPIO.5 (BCM 6)",
+                  "12": "GPIO.3 (BCM 12)",
+                  "13": "GPIO.6 (BCM 13)",
+                  "16": "GPIO.4 (BCM 16)",
+                  "17": "GPIO.0 (BCM 17)",
+                  "18": "GPIO.1 (BCM 18)",
+                  "19": "GPIO.7 (BCM 19)",
+                  "20": "GPIO.5 (BCM 20)",
+                  "21": "GPIO.6 (BCM 21)",
+                  "22": "GPIO.3 (BCM 22)",
+                  "23": "GPIO.4 (BCM 23)",
+                  "24": "GPIO.5 (BCM 24)",
+                  "25": "GPIO.6 (BCM 25)",
+                  "26": "GPIO.10 (BCM 26)",
+                  "27": "GPIO.2 (BCM 27)"
+                }
+              }
+            },
+            "required": ["accessory", "name", "line"]
+          }
+        }
+      },
+      "required": ["platform", "accessories"]
+    }
+  }

@@ -7,7 +7,7 @@ class MyTimedSwitch {
   
       // Ensure activationTime is between 200ms and 5000ms (5s)
       this.activationTime = Math.min(Math.max(config.activationTime || 1000, 200), 5000);
-      this.remainingTime = 0; // To store countdown
+      this.remainingTime = 0; // Tracks countdown time
   
       // Set default GPIO line to 5 if not specified
       this.switchPin = config.switchPin || { chip: 4, line: 5 };
@@ -15,17 +15,18 @@ class MyTimedSwitch {
       this.Service = this.api.hap.Service;
       this.Characteristic = this.api.hap.Characteristic;
   
-      this.service = new this.Service.Switch(this.name);
+      // Create Stateful Timer Service (to show countdown in HomeKit)
+      this.service = new this.Service.Valve(this.name);
       this.service
-        .getCharacteristic(this.Characteristic.On)
+        .getCharacteristic(this.Characteristic.Active)
         .onGet(this.handleGet.bind(this))
         .onSet(this.handleSet.bind(this));
   
-      // Add custom characteristics for tracking time
-      this.durationCharacteristic = this.service.addCharacteristic(this.Characteristic.SetDuration);
-      this.remainingDurationCharacteristic = this.service.addCharacteristic(this.Characteristic.RemainingDuration);
+      // Required for HomeKit to show time remaining
+      this.setDurationCharacteristic = this.service.getCharacteristic(this.Characteristic.SetDuration);
+      this.remainingDurationCharacteristic = this.service.getCharacteristic(this.Characteristic.RemainingDuration);
   
-      this.durationCharacteristic.onGet(() => this.activationTime / 1000); // Convert ms to seconds
+      this.setDurationCharacteristic.onGet(() => this.activationTime / 1000); // Convert ms to seconds
       this.remainingDurationCharacteristic.onGet(() => this.remainingTime / 1000); // Convert ms to seconds
   
       try {
@@ -38,25 +39,22 @@ class MyTimedSwitch {
     }
   
     async handleGet() {
-      this.log.info(`Getting switch state: ${this.switchState}`);
       return this.switchState;
     }
   
     async handleSet(value) {
-      this.log.info(`Setting switch state to: ${value}`);
-  
       if (value) {
         try {
           this.switchState = true;
           this.outputPin.value = 1;
           this.remainingTime = this.activationTime;
   
-          this.log.info(`Switch activated. It will turn off in ${this.activationTime} ms.`);
+          this.log.info(`Switch activated. Countdown started: ${this.activationTime} ms`);
   
-          // Start countdown
+          // Start countdown & update HomeKit UI
           const interval = setInterval(() => {
             this.remainingTime -= 1000;
-            this.remainingDurationCharacteristic.updateValue(this.remainingTime / 1000); // Update in seconds
+            this.remainingDurationCharacteristic.updateValue(this.remainingTime / 1000); // Update HomeKit every second
   
             if (this.remainingTime <= 0) {
               clearInterval(interval);
@@ -66,7 +64,7 @@ class MyTimedSwitch {
           setTimeout(() => {
             this.switchState = false;
             this.outputPin.value = 0;
-            this.service.getCharacteristic(this.Characteristic.On).updateValue(false);
+            this.service.getCharacteristic(this.Characteristic.Active).updateValue(false);
             this.remainingTime = 0;
             this.remainingDurationCharacteristic.updateValue(0);
             this.log.info('Switch automatically turned off.');

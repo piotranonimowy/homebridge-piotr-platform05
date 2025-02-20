@@ -1,0 +1,24 @@
+{
+  "platforms": [
+    {
+      "platform": "PiotrPlatform05",
+      "name": "Piotr Platform",
+      "accessories": [
+        {
+          "accessory": "MySwitch",
+          "name": "Garage Switch"
+        },
+        {
+          "accessory": "GarageOpenedSensor",
+          "name": "Garage Opened Sensor",
+          "chipline1": { "chip": 4, "line": 17 }
+        },
+        {
+          "accessory": "GarageClosedSensor",
+          "name": "Garage Closed Sensor",
+          "chipline2": { "chip": 4, "line": 27 }
+        }
+      ]
+    }
+  ]
+}

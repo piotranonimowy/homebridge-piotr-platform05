@@ -1,5 +1,3 @@
-
-
 const MySwitchAccessory = require('./MySwitchAccessory');
 const ContactSensor1Accessory = require('./ContactSensor1Accessory');
 const ContactSensor2Accessory = require('./ContactSensor2Accessory');
@@ -13,15 +11,15 @@ class PiotrPlatform05 {
     this.log = log;
     this.config = config;
     this.api = api;
-    this.accessories = []; // Initialize an empty array for accessories
+    this.accessories = new Map(); // Use a Map for better performance with UUID lookup
 
     if (!config) {
-      this.log('No configuration found for PiotrPlatform05');
+      this.log.error('No configuration found for PiotrPlatform05');
       return;
     }
 
-    api.on('didFinishLaunching', () => {
-      this.log('PiotrPlatform05 has finished launching.');
+    this.api.on('didFinishLaunching', () => {
+      this.log.info('PiotrPlatform05 has finished launching.');
       this.setupAccessories();
     });
   }
@@ -31,48 +29,48 @@ class PiotrPlatform05 {
    * When Homebridge starts, it will call this method for each cached accessory.
    */
   configureAccessory(accessory) {
-    this.log(`Loading cached accessory: ${accessory.displayName}`);
-    this.accessories.push(accessory);
+    this.log.info(`Loading cached accessory: ${accessory.displayName}`);
+    this.accessories.set(accessory.UUID, accessory);
   }
 
   setupAccessories() {
-    if (!this.config.accessories || !Array.isArray(this.config.accessories)) {
-      this.log('No accessories found in config.json');
+    if (!Array.isArray(this.config.accessories)) {
+      this.log.warn('No accessories found in config.json');
       return;
     }
 
     this.config.accessories.forEach((accessoryConfig) => {
-      let accessoryInstance;
-      let uuid = this.api.hap.uuid.generate(accessoryConfig.name);
+      const uuid = this.api.hap.uuid.generate(accessoryConfig.name);
+      let existingAccessory = this.accessories.get(uuid);
 
+      let accessoryInstance;
       switch (accessoryConfig.accessory) {
         case 'MySwitch':
-          accessoryInstance = new MySwitchAccessory(this.log, accessoryConfig, this.api.hap);
+          accessoryInstance = new MySwitchAccessory(this.log, accessoryConfig, this.api);
           break;
         case 'GarageOpenedSensor':
-          accessoryInstance = new ContactSensor1Accessory(this.log, accessoryConfig, this.api.hap);
+          accessoryInstance = new ContactSensor1Accessory(this.log, accessoryConfig, this.api);
           break;
         case 'GarageClosedSensor':
-          //accessoryInstance = new ContactSensor2Accessory(this.log, accessoryConfig, this.api.hap);
-          accessoryInstance = new ContactSensor2Accessory(this.log, accessoryConfig);
+          accessoryInstance = new ContactSensor2Accessory(this.log, accessoryConfig, this.api);
           break;
         default:
-          this.log(`Unknown accessory type: ${accessoryConfig.accessory}`);
+          this.log.warn(`Unknown accessory type: ${accessoryConfig.accessory}`);
           return;
       }
 
-      // Check if accessory is already registered
-      let existingAccessory = this.accessories.find(acc => acc.UUID === uuid);
-
       if (existingAccessory) {
-        this.log(`Restoring existing accessory: ${accessoryConfig.name}`);
+        this.log.info(`Restoring existing accessory: ${accessoryConfig.name}`);
+        existingAccessory.context = accessoryConfig;
         existingAccessory.services = accessoryInstance.getServices();
+        this.api.updatePlatformAccessories([existingAccessory]);
       } else {
-        this.log(`Adding new accessory: ${accessoryConfig.name}`);
-        let newAccessory = new this.api.platformAccessory(accessoryConfig.name, uuid);
+        this.log.info(`Adding new accessory: ${accessoryConfig.name}`);
+        const newAccessory = new this.api.platformAccessory(accessoryConfig.name, uuid);
         newAccessory.addService(accessoryInstance.getServices()[0]);
-        this.accessories.push(newAccessory);
+        newAccessory.context = accessoryConfig;
         this.api.registerPlatformAccessories('homebridge-piotr-platform05', 'PiotrPlatform05', [newAccessory]);
+        this.accessories.set(uuid, newAccessory);
       }
     });
   }

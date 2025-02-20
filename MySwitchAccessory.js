@@ -1,40 +1,47 @@
-const { Service, Characteristic } = require('hap-nodejs');
-const { RaspberryPi_5B, Edge } = require('opengpio');
-
 class MySwitchAccessory {
-    constructor(log, config) {
-      this.log = log;
-      this.name = config.name || 'SmSwitch';
-      this.switchState = false;
-  
-      this.service = new Service.Switch(this.name);
-      this.service
-        .getCharacteristic(Characteristic.On)
-        .onGet(this.handleGet.bind(this))
-        .onSet(this.handleSet.bind(this));
+  constructor(log, config, api) {
+    this.log = log;
+    this.api = api;
+    this.name = config.name || 'SmSwitch';
+    this.switchState = false;
 
-        this.outputPin = RaspberryPi_5B.output({ chip: 4, line: 22 });
-        this.outputPin.value = 0;
-    }
-  
-    handleGet() {
-      this.log(`Getting switch state: ${this.switchState}`);
-      return this.switchState;
-    }
-  
-    handleSet(value) {
-      this.log(`Setting switch state to: ${value}`);
-      try {
-      this.outputPin.value = value ? 1 : 0;
-      this.switchState = value;
-      } catch (error) {
-        this.log('Error setting GPIO state:', error);
-      }
-    }
-  
-    getServices() {
-      return [this.service];
+    this.Service = this.api.hap.Service;
+    this.Characteristic = this.api.hap.Characteristic;
+
+    this.service = new this.Service.Switch(this.name);
+
+    this.service
+      .getCharacteristic(this.Characteristic.On)
+      .onGet(this.handleGet.bind(this))
+      .onSet(this.handleSet.bind(this));
+
+    try {
+      const { RaspberryPi_5B } = require('opengpio');
+      this.outputPin = RaspberryPi_5B.output({ chip: 4, line: 22 });
+      this.outputPin.value = 0;
+    } catch (error) {
+      this.log.error('Error initializing GPIO:', error);
     }
   }
-  
-  module.exports = MySwitchAccessory;
+
+  async handleGet() {
+    this.log.info(`Getting switch state: ${this.switchState}`);
+    return this.switchState;
+  }
+
+  async handleSet(value) {
+    this.log.info(`Setting switch state to: ${value}`);
+    try {
+      this.outputPin.value = value ? 1 : 0;
+      this.switchState = value;
+    } catch (error) {
+      this.log.error('Error setting GPIO state:', error);
+    }
+  }
+
+  getServices() {
+    return [this.service];
+  }
+}
+
+module.exports = MySwitchAccessory;

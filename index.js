@@ -1,4 +1,5 @@
 const MySwitchAccessory = require('./MySwitchAccessory');
+const MyTimedSwitch = require('./MyTimedSwitchAccessory');
 const ContactSensor1Accessory = require('./ContactSensor1Accessory');
 const ContactSensor2Accessory = require('./ContactSensor2Accessory');
 
@@ -47,6 +48,9 @@ class PiotrPlatform05 {
       switch (accessoryConfig.accessory) {
         case 'MySwitch':
           accessoryInstance = new MySwitchAccessory(this.log, accessoryConfig, this.api);
+          break;
+        case 'MyTimedSwitch':
+          accessoryInstance = new MyTimedSwitch(this.log, accessoryConfig, this.api);
           break;
         case 'GarageOpenedSensor':
           accessoryInstance = new ContactSensor1Accessory(this.log, accessoryConfig, this.api);

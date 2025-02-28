@@ -34,6 +34,11 @@ class MySwitchAccessory {
     try {
       this.outputPin.value = value ? 1 : 0;
       this.switchState = value;
+            // Ensure HomeKit is updated with the new switch state
+            this.service.getCharacteristic(this.Characteristic.On).updateValue(this.switchState);
+      
+            // Send notification to HomeKit for status change
+            this.api.updatePlatformAccessories([this.service]);
     } catch (error) {
       this.log.error('Error setting GPIO state:', error);
     }

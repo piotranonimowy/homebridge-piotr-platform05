@@ -34,7 +34,7 @@ class MySwitchAccessory {
     try {
       this.outputPin.value = value ? 1 : 0;
       this.switchState = value;
-            
+      this.service.getCharacteristic(this.Characteristic.On).updateValue(this.switchState);
     } catch (error) {
       this.log.error('Error setting GPIO state:', error);
     }

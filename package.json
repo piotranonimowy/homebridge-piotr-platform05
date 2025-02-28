@@ -1,6 +1,6 @@
 {
     "name": "homebridge-piotr-platform05",
-    "version": "1.1.21",
+    "version": "1.1.23",
     "description": "A Homebridge plugin to control a Raspberry Pi-based switch and contact sensors for a garage door.",
     "main": "index.js",
     "keywords": [

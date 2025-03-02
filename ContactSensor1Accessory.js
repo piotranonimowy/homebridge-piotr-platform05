@@ -17,7 +17,7 @@ class ContactSensor1Accessory {
       const { RaspberryPi_5B, Edge } = require('opengpio');
       this.watch = RaspberryPi_5B.watch(this.chipLine, Edge.Both);
       this.watch.on('change', (value) => {
-        this.contactState = value ? 0 : 1; 
+        this.contactState = value ? 0 : 1; // Convert value to HomeKit format (0 = Closed, 1 = Open)
         this.log.info('Garage Opened Sensor state changed:', this.contactState);
         this.contactCharacteristic.updateValue(this.contactState);
       });
